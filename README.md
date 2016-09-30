@@ -98,3 +98,17 @@ end
 Do I have to define a serializer for every resource?
 
 Nah. Active Model Serializers will handle it.
+
+Pagination
+
+Default page size is currently 50
+
+`GET /customers?page=2&size=10`
+
+```
+HEADERS
+  'X-Page' => 1,
+  'X-Page-Size' => 10,
+  'X-Page-Count' => 12,
+  'X-Total' => 120
+```

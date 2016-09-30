@@ -6,7 +6,11 @@ module GenericActions
   end
 
   def index
-    @resource = apply_filters(filter_params).all
+    result = apply_filters(filter_params)
+    result = apply_pagination(result, page_params)
+
+    @resource = result.all
+
     render json: @resource, include: params[:include]
   end
 
@@ -79,6 +83,28 @@ module GenericActions
 
   def filter_params
     params[:filter].try(:permit, *self.class.filters.keys).to_h
+  end
+
+  def apply_pagination(result, options = {})
+    page = options[:page].to_i
+    size = options[:size].to_i
+    total = result.count
+    count = (total/size).ceil
+
+    headers = {
+      'X-Page' => page,
+      'X-Page-Size' => size,
+      'X-Page-Count' => count,
+      'X-Total' => total
+    }
+
+    headers.each { |k,v| response.headers[k] = v }
+
+    result.limit(size).offset(size * ((num = page - 1) < 0 ? 0 : num))
+  end
+
+  def page_params
+    { page: params[:page] || 1, size: params[:size] || 50 }
   end
 
   class_methods do
